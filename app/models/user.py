@@ -5,7 +5,7 @@ from ..database import Base
 
 
 class User(Base):
-    """User model for authentication"""
+    """User model for authentication and marking author of posts and comments"""
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -17,6 +17,7 @@ class User(Base):
 
     posts = relationship("Post", back_populates="owner")
     comments = relationship("Comment", back_populates="owner")
+    blocked_comments = relationship("BlockedComment", back_populates="owner")
 
 
 class UserProfile(Base):

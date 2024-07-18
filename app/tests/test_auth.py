@@ -1,7 +1,6 @@
-TEST_USER_USERNAME = "testuser"
-TEST_USER_EMAIL = "testuser@example.com"
-TEST_USER_PASSWORD = "testpassword"
-TEST_USER_AUTH_TOKEN = None
+from .conftest import TestUserCredentials
+
+user = TestUserCredentials()
 
 
 def test_create_user(create_test_db, test_client) -> None:
@@ -14,7 +13,7 @@ def test_create_user(create_test_db, test_client) -> None:
 
     response = test_client.post(
         "api/register/",
-        json={"username": TEST_USER_USERNAME, "email": TEST_USER_EMAIL, "password": TEST_USER_PASSWORD}
+        json={"username": user.username, "email": user.email, "password": user.password}
     )
 
     # Verify response status code - 200 OK
@@ -23,8 +22,8 @@ def test_create_user(create_test_db, test_client) -> None:
     data = response.json()
 
     # Verify that the returned data contains provided username and email
-    assert data["username"] == "testuser"
-    assert data["email"] == "testuser@example.com"
+    assert data["username"] == user.username
+    assert data["email"] == user.email
 
     # Verify that response contains 'id' field, indicating successful user creation
     assert "id" in data
@@ -46,14 +45,14 @@ def test_create_user(create_test_db, test_client) -> None:
 
 def test_create_user_existing_username(create_test_db, test_client):
     """
-    Test user creation enpoint in case, where provided username already exists.
+    Test user creation endpoint in case, where provided username already exists.
 
     This test ensures that a user cannot be created with already occupied username, returning an error
     with 400 status code.
     """
     response = test_client.post(
         "api/register/",
-        json={"username": "testuser", "email": "testuser2@example.com", "password": "testpassword"}
+        json={"username": user.username, "email": "testuser2@example.com", "password": user.password}
     )
 
     # Verify response status code - 400 BAD REQUEST
@@ -75,7 +74,7 @@ def test_login_user(create_test_db, test_client) -> str:
     # Send POST request with form-data containing user username and password
     response = test_client.post(
         "api/login/",
-        data=dict(username=TEST_USER_USERNAME, password=TEST_USER_PASSWORD)
+        data=dict(username=user.username, password=user.password)
     )
 
     # Verify response status code - 200 OK
@@ -88,27 +87,64 @@ def test_login_user(create_test_db, test_client) -> str:
     assert "token_type" in data
 
     # Save string with token for further testing
-    global TEST_USER_AUTH_TOKEN
-    TEST_USER_AUTH_TOKEN = f"{data['token_type']} {data['access_token']}"
+    user.access_token = f"{data['token_type']} {data['access_token']}"
+
+
+def test_refresh_access_token(create_test_db, test_client):
+    """
+    Test updating access token enpoint.
+
+    This test verifies, that with given access token a new access token can be retrieved.
+    """
+    response = test_client.get(
+        "api/refresh-access-token",
+        headers={
+            "Authorization": user.access_token
+        }
+    )
+    # Verify response status code - 200 OK
+    assert response.status_code == 200
+
+    data = response.json()
+
+    # Verify that response contains new access token
+    assert "access_token" in data
+    assert "token_type" in data
+
+    # Save new access token
+
+
+def test_my_profile(create_test_db, test_client):
+    """Test getting current user profile endpoint.
+
+    This test ensures that user profile can be retrieved with provided credentials."""
+    response = test_client.get(
+        "api/my-profile",
+        headers={"Authorization": user.access_token}
+    )
+    assert response.status_code == 200
+
+    data = response.json()
+    assert "bio" in data
 
 
 def test_delete_user(create_test_db, test_client):
     """
     Test user deletion endpoint.
 
-    This test ensures that user can be sucessfully deleted
+    This test ensures that user can be successfully deleted
     """
     response = test_client.delete(
         "api/profile",
         headers={
-            "Authorization": TEST_USER_AUTH_TOKEN
+            "Authorization": user.access_token
         }
     )
 
     # Verify response status code - 200 OK
-    assert response.status_code
+    assert response.status_code == 200
 
     data = response.json()
 
-    # Verify successfull deletion message
-    assert data["message"] == f"User {TEST_USER_USERNAME} was deleted successfully"
+    # Verify successful deletion message
+    assert data["message"] == f"User {user.username} was deleted successfully"

@@ -14,12 +14,14 @@ from sqlalchemy.orm import Session
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-
 router = APIRouter()
 
 
 @router.post("/register", response_model=UserSchema)
-def create_user(user: UserCreate, db: Session = Depends(get_db)) -> User:
+async def create_user(
+        user: UserCreate,
+        db: Session = Depends(get_db)
+) -> User:
     """
     Endpoint for creating users
     :param user: Create user model
@@ -31,7 +33,8 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)) -> User:
     try:
         db_user = db.query(User).filter(User.username == user.username).first()
         if db_user:
-            raise HTTPException(status_code=400, detail="Username already registered")
+            raise HTTPException(status_code=400,
+                                detail="Username already registered")
 
         # Add user to database with hashed password
         hashed_password = get_password_hash(user.password)
@@ -50,11 +53,15 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)) -> User:
 
     except SQLAlchemyError as e:  # Handle database error
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"An database error occurred while trying to register: {e}")
+        raise HTTPException(status_code=500,
+                            detail=f"An database error occurred while trying to register: {e}")
 
 
 @router.post("/login", response_model=dict)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)) -> dict:
+async def login_for_access_token(
+        form_data: OAuth2PasswordRequestForm = Depends(),
+        db: Session = Depends(get_db)
+) -> dict:
     """
     Login user by getting JWT token
     :param form_data: Credentials form
@@ -74,13 +81,15 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         return {"access_token": access_token, "token_type": "bearer"}
     except SQLAlchemyError as e:  # Handle database error
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"An database error occurred while trying to login: {e}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
+        raise HTTPException(status_code=500,
+                            detail=f"An database error occurred while trying to login: {e}")
 
 
 @router.delete("/profile", response_model=dict)
-def delete_profile(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> dict:
+async def delete_profile(
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+) -> dict:
     """
     Delete current user profile
     :param db: Current database Session object
@@ -93,11 +102,15 @@ def delete_profile(db: Session = Depends(get_db), current_user: User = Depends(g
         return {"message": f"User {current_user.username} was deleted successfully"}
     except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"An database error occurred while deleting the user profile: {e}")
+        raise HTTPException(status_code=500,
+                            detail=f"An database error occurred while deleting the user profile: {e}")
 
 
 @router.get("/my-profile", response_model=UserProfileSchema)
-async def get_current_user_profile(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> UserProfile:
+async def get_current_user_profile(
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+) -> UserProfile:
     """
     Get current authenticated user profile
     :param db: Current database Session object
@@ -107,33 +120,34 @@ async def get_current_user_profile(db: Session = Depends(get_db), current_user: 
     try:
         user_profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
         if user_profile is None:
-            raise HTTPException(status_code=404, detail="Current user not found")
+            raise HTTPException(status_code=404,
+                                detail="Current user not found")
 
         return user_profile
 
     except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+        raise HTTPException(status_code=500,
+                            detail=f"Database error: {e}")
 
 
-@router.post("/refresh-token", response_model=dict)
-async def refresh_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)) -> dict:
+@router.get("/refresh-access-token", response_model=dict)
+async def refresh_access_token(
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+) -> dict:
     """
-    Refresh token endpoint
-    :param form_data: Credentials form
+    Refresh access token endpoint for current user.
     :param db: Current database session object
+    :param current_user: Current user
     :return: Dict with new access token
     """
     try:
-        user = db.query(User).filter(User.username == form_data.username).first()
-        if not user or not verify_password(form_data.password, user.hashed_password):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password",
-                headers={"WWW-Authenticate": "Bearer"}
-            )
-        refresh_token_expires = timedelta(minutes=30)
-        refresh_token = create_refresh_token(data={"sub": user.username}, expires_delta=refresh_token_expires)
-        return {"access_token": refresh_token, "token_type": "bearer"}
+        user = db.query(User).filter(User.id == current_user.id).first()
+        access_token_expires = timedelta(minutes=30)
+        access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
+        return {"access_token": access_token, "token_type": "bearer"}
+
     except SQLAlchemyError as e:  # Handle database error
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"An database error occurred while trying to refresh token: {e}")
+        raise HTTPException(status_code=500,
+                            detail=f"An database error occurred while trying to refresh token: {e}")

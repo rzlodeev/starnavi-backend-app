@@ -9,12 +9,15 @@ from ..core.security import get_current_user
 
 from sqlalchemy.orm import Session
 
+from ..services.llm_moderation import moderation_service
 
 router = APIRouter()
 
 
 @router.get("/posts", response_model=list[PostSchema])
-def list_posts(db: Session = Depends(get_db)) -> list:
+async def list_posts(
+        db: Session = Depends(get_db)
+) -> list:
     """
     Endpoint for retrieving all posts
     :param db: Current db Session object
@@ -23,12 +26,17 @@ def list_posts(db: Session = Depends(get_db)) -> list:
     try:
         posts = db.query(PostModel).all()
         return posts
+
     except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred when trying to get list of posts: {e}")
+        raise HTTPException(status_code=500,
+                            detail=f"An error occurred while trying to get list of posts: {e}")
 
 
 @router.get("/posts/{post_id}", response_model=PostSchema)
-def get_post(post_id: int, db: Session = Depends(get_db)):
+async def get_post(
+        post_id: int,
+        db: Session = Depends(get_db)
+):
     """
     Endpoint for retrieving specific post by id
     :param post_id: Post ID
@@ -38,12 +46,18 @@ def get_post(post_id: int, db: Session = Depends(get_db)):
     try:
         post = db.query(PostModel).filter(PostModel.id == post_id).first()
         return post
+
     except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred when trying to retrieve post: {e}")
+        raise HTTPException(status_code=500,
+                            detail=f"An error occurred while trying to retrieve post: {e}")
 
 
-@router.post("/posts", response_model=PostSchema)
-def create_post(post: PostCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> PostModel:
+@router.post("/posts", response_model=PostSchema, status_code=201)
+async def create_post(
+        post: PostCreate,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+) -> PostModel:
     """
     Endpoint for creating post
     :param post: Create post model
@@ -52,17 +66,30 @@ def create_post(post: PostCreate, db: Session = Depends(get_db), current_user: U
     :return: Post model
     """
     try:
+        # Call moderation service to check for potential harmfulness of content and check moderation result
+        moderation_result = await moderation_service.moderate_content(f"Title: {post.title}; Content: {post.content}")
+
+        if moderation_result.get("flagged"):
+            raise HTTPException(status_code=422, detail="Content is flagged by moderation")
+
         db_post = PostModel(**post.dict(), owner_id=current_user.id)
         db.add(db_post)
         db.commit()
         db.refresh(db_post)
         return db_post
+
     except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred when trying to create a post: {e}")
+        raise HTTPException(status_code=500,
+                            detail=f"An error occurred while trying to create a post: {e}")
 
 
 @router.put("/posts/{post_id}", response_model=PostSchema)
-def update_post(post_id: int, post: PostUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def update_post(
+        post_id: int,
+        post: PostUpdate,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
     """
     Endpoint for updating post by its author
     :param post_id: Id of the post to update
@@ -79,7 +106,14 @@ def update_post(post_id: int, post: PostUpdate, db: Session = Depends(get_db), c
 
         # Check, if current user is author of the post
         if db_post.owner_id != current_user.id:
-            raise HTTPException(status_code=403, detail="Post can be updated only by its author.")
+            raise HTTPException(status_code=403,
+                                detail="Post can be updated only by its author.")
+
+        # Call moderation service to check for potential harmfulness of content and check moderation result
+        moderation_result = await moderation_service.moderate_content(f"Title: {post.title}; Content: {post.content}")
+
+        if moderation_result.get("flagged"):
+            raise HTTPException(status_code=422, detail="Content is flagged by moderation")
 
         for var, value in vars(post).items():
             setattr(db_post, var, value) if value else None
@@ -89,11 +123,15 @@ def update_post(post_id: int, post: PostUpdate, db: Session = Depends(get_db), c
         return db_post
 
     except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred when trying to update post: {e}")
+        raise HTTPException(status_code=500,
+                            detail=f"An error occurred while trying to update post: {e}")
 
 
 @router.delete("/posts/{post_id}", response_model=dict)
-def delete_post(post_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> dict:
+async def delete_post(post_id: int,
+                db: Session = Depends(get_db),
+                current_user: User = Depends(get_current_user)
+                ) -> dict:
     """
     Endpoint for deleting post by its author
     :param post_id: Post ID
@@ -113,7 +151,7 @@ def delete_post(post_id: int, db: Session = Depends(get_db), current_user: User 
         db.delete(post)
         db.commit()
 
-        return {"message": "Post deleted successfully."}
+        return {"detail": "Post deleted successfully."}
     except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred when trying to delete post: {e}")
-
+        raise HTTPException(status_code=500,
+                            detail=f"An error occurred while trying to delete post: {e}")

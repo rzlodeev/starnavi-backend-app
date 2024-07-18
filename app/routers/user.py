@@ -13,7 +13,16 @@ router = APIRouter()
 
 
 @router.get("/profile/{user_id}")
-async def get_user_profile(user_id: int, db: Session = Depends(get_db)):
+async def get_user_profile(
+        user_id: int,
+        db: Session = Depends(get_db)
+):
+    """
+    Endpoint for retrieving user profile by id
+    :param user_id: User if
+    :param db: Current database Session object
+    :return: User profile
+    """
     try:
         user_profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
         if user_profile is None:
@@ -21,4 +30,5 @@ async def get_user_profile(user_id: int, db: Session = Depends(get_db)):
 
         return user_profile
     except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+        raise HTTPException(status_code=500,
+                            detail=f"An error occurred while trying to get user profile {user_id}: {e}")
