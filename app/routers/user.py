@@ -19,7 +19,7 @@ async def get_user_profile(
 ):
     """
     Endpoint for retrieving user profile by id
-    :param user_id: User if
+    :param user_id: User id
     :param db: Current database Session object
     :return: User profile
     """

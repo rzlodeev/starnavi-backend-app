@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 
 from ..database import Base
@@ -14,6 +14,9 @@ class User(Base):
     hashed_password = Column(String)
 
     profile = relationship("UserProfile", backref="user")
+
+    auto_respond_to_comments = Column(Boolean, default=False)
+    auto_respond_time = Column(Integer, nullable=True)
 
     posts = relationship("Post", back_populates="owner")
     comments = relationship("Comment", back_populates="owner")

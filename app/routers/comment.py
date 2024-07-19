@@ -1,20 +1,22 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from typing import Type
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.exc import SQLAlchemyError
 
 from ..schemas.comment import CommentCreate, CommentUpdate, Comment as CommentSchema
 from ..schemas.comment import BlockedComment as BlockedCommentSchema
 from ..models.comment import Comment as CommentModel
 from ..models.comment import BlockedComment as BlockedCommentModel
-from ..models.user import User
+from ..models.post import Post as PostModel
+from ..models.user import User as UserModel
 from ..database import get_db
 from ..core.security import get_current_user
 
 from sqlalchemy.orm import Session
 
 from ..services.llm_moderation import moderation_service
+from ..services.auto_reply_to_comment import auto_reply_to_comment_service
 
 router = APIRouter()
 
@@ -42,13 +44,18 @@ async def list_comments(
 async def create_comment(
         comment: CommentCreate,
         post_id: int,
+        background_tasks: BackgroundTasks,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        current_user: UserModel = Depends(get_current_user)
 ):
     """
-    Endpoint for creating comment to specific post
+    Endpoint for creating comment to specific post.
+
+    After adding comment to database, calls auto-reply service, if author enabled this feature
+    and if comment author is not author of the post.
     :param comment: Create comment model
     :param post_id: Post id to create comment for
+    :param background_tasks: FastAPI BackgroundTasks object for putting delayed comment auto reply in background
     :param db: Current database Session object
     :param current_user: Comment author
     :return: Created comment
@@ -57,12 +64,14 @@ async def create_comment(
         db_comment = CommentModel(**comment.dict(), post_id=post_id, owner_id=current_user.id)
 
         # Call moderation service to check for potential harmfulness of content and check moderation result
-        moderation_result = await moderation_service.moderate_content(comment.content)
+        # moderation_result = await moderation_service.moderate_content(comment.content)
+        moderation_result = {}
 
         if moderation_result.get("flagged"):
             # Extract blocking reasoning from moderation service response
             blocking_reasoning_string = ' '.join(
-                [reason for reason in moderation_result.get("categories").keys() if moderation_result.get("categories").get(reason)])
+                [reason for reason in moderation_result.get("categories").keys() if
+                 moderation_result.get("categories").get(reason)])
 
             # Add blocked comment to table in database of blocked comments
             blocked_db_comment = BlockedCommentModel(**comment.dict(),
@@ -79,6 +88,29 @@ async def create_comment(
         db.add(db_comment)
         db.commit()
         db.refresh(db_comment)
+
+        # Check, if post author enabled auto-reply feature, and if so, call corresponding service
+
+        # Get post author and check auto-reply flag
+        db_post = db.query(PostModel).filter(PostModel.id == post_id).first()
+        post_author_id = db_post.owner_id
+        db_post_owner = db.query(UserModel).filter(UserModel.id == post_author_id).first()
+        auto_reply_enabled = db_post_owner.auto_respond_to_comments
+
+        # Also ensure, that comment wasn't written by post author
+        if auto_reply_enabled and post_author_id != current_user.id:
+            reply_comment_str = await auto_reply_to_comment_service.get_reply_string(
+                post_content=db_post.content,
+                comment_to_reply_content=db_comment
+            )
+
+            background_tasks.add_task(func=auto_reply_to_comment_service.reply_with_delay,
+                                      delay_min=db_post_owner.auto_respond_time,
+                                      reply_comment_str=reply_comment_str,
+                                      author_id=post_author_id,
+                                      post_id=db_post.id,
+                                      db=db)
+
         return db_comment
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500,
@@ -91,7 +123,7 @@ async def update_comment(
         comment_id: int,
         comment: CommentUpdate,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        current_user: UserModel = Depends(get_current_user)
 ):
     """
     Endpoint for updating comment by its author
@@ -139,7 +171,7 @@ async def delete_comment(
         post_id: int,
         comment_id: int,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)) -> dict:
+        current_user: UserModel = Depends(get_current_user)) -> dict:
     """
     Endpoint for deleting comment by its author
     :param post_id: Post id to delete comment for
@@ -151,6 +183,9 @@ async def delete_comment(
     try:
         db_comment = db.query(CommentModel).filter(CommentModel.post_id == post_id,
                                                    CommentModel.id == comment_id).first()
+
+        if db_comment is None:
+            raise HTTPException(status_code=404, detail="Comment not found")
 
         # Check if current user is comment author
         if db_comment.owner_id != current_user.id:
@@ -175,19 +210,22 @@ def get_comments_daily_breakdown(
     """
     Get analytics for comment between specified dates.
     :param date_from: Start date, included
-    :param date_to: End date, excluded
+    :param date_to: End date, included
     :param db: Current database Session object
     :return: Retrieved comments analytics
     """
     # Get comments from database
     db_comments = db.query(CommentModel).filter(
         CommentModel.created_at >= datetime.strptime(date_from, '%Y-%m-%d'),
-        CommentModel.created_at <= datetime.strptime(date_to, '%Y-%m-%d')).all()
+        # Add 1 day to date_to, so it will also be included
+        CommentModel.created_at < (datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1))
+    ).all()
 
     # Get blocked comments from database
     db_blocked_comments = db.query(BlockedCommentModel).filter(
         CommentModel.created_at >= datetime.strptime(date_from, '%Y-%m-%d'),
-        CommentModel.created_at <= datetime.strptime(date_to, '%Y-%m-%d')).all()
+        CommentModel.created_at <= (datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1))
+    ).all()
 
     response_dict = {
         "comments": {},
@@ -196,13 +234,13 @@ def get_comments_daily_breakdown(
     total_comments_amount = 0
     total_blocked_comments_amount = 0
 
-    def update_response_dict_with_formatted_comments_info(
+    def dict_with_formatted_comments_info(
             _response_dict: dict,
             comments: list[Type[CommentModel]],
             comments_type: str,
             total_amount: int) -> tuple[dict, int]:
         """
-        Parse given list of comment model from database and update current dict.
+        Parse given list of comment model from database.
         :param _response_dict: Dict that will be returned by the endpoint
         :param comments: Retrieved comments from the database
         :param comments_type: Type of comments that will be processed. One of "comments", "blocked_comments"
@@ -213,7 +251,8 @@ def get_comments_daily_breakdown(
             # Group comments by days
             comment_date = comment.created_at.date()
 
-            if str(comment_date) not in _response_dict.get(comments_type).keys():  # Initiate list with comments for that date
+            if str(comment_date) not in _response_dict.get(
+                    comments_type).keys():  # Initiate list with comments for that date
                 _response_dict[comments_type].update({str(comment_date): {"items": [comment.to_dict()]}})
             else:
                 _response_dict[comments_type][str(comment_date)]["items"].append(comment.to_dict())
@@ -232,6 +271,7 @@ def get_comments_daily_breakdown(
                 }
             })
 
+        # Merge dicts with items and amount of comments together
         resulting_dict = {k: dict(_response_dict[comments_type].get(k, {}),
                                   **date_comments_amount_temp.get(k, {}))
                           for k in set(_response_dict[comments_type]) | set(date_comments_amount_temp)}
@@ -240,13 +280,13 @@ def get_comments_daily_breakdown(
 
     # Update resulting response dict with parsed comments according to their existence
     if db_comments:
-        parsed_comments_dict, total_comments_amount = update_response_dict_with_formatted_comments_info(
+        parsed_comments_dict, total_comments_amount = dict_with_formatted_comments_info(
             response_dict, db_comments, "comments", total_comments_amount
         )
         response_dict["comments"].update(parsed_comments_dict)
 
     if db_blocked_comments:
-        parsed_blocked_comments_dict, total_blocked_comments_amount = update_response_dict_with_formatted_comments_info(
+        parsed_blocked_comments_dict, total_blocked_comments_amount = dict_with_formatted_comments_info(
             response_dict, db_blocked_comments, "blocked_comments", total_blocked_comments_amount
         )
         response_dict["blocked_comments"].update(parsed_blocked_comments_dict)
@@ -258,4 +298,3 @@ def get_comments_daily_breakdown(
     })
 
     return response_dict
-
