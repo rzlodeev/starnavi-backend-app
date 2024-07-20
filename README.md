@@ -21,7 +21,7 @@ Additional features:
 Clone repo to your local machine:
 ```
 git clone https://github.com/rzlodeev/starnavi-backend-app.git
-cd starnavi-backend-app.git
+cd starnavi-backend-app
 ```
 
 ### Setup virtual environment
