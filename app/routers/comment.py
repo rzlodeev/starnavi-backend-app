@@ -64,8 +64,7 @@ async def create_comment(
         db_comment = CommentModel(**comment.dict(), post_id=post_id, owner_id=current_user.id)
 
         # Call moderation service to check for potential harmfulness of content and check moderation result
-        # moderation_result = await moderation_service.moderate_content(comment.content)
-        moderation_result = {}
+        moderation_result = await moderation_service.moderate_content(comment.content)
 
         if moderation_result.get("flagged"):
             # Extract blocking reasoning from moderation service response

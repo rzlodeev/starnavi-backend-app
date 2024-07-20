@@ -1,4 +1,5 @@
 import datetime
+import time
 from typing import Optional
 from datetime import datetime, timedelta
 
@@ -243,3 +244,52 @@ def test_comments_daily_breakdown(create_test_db, test_client):
 
     # Verify that no comments were returned with dates out of range
     assert comments_for_days_out_range_response.json().get("total_comments_amount") == 0
+
+
+def test_auto_reply_feature(create_test_db, test_client):
+    """Test for auto reply feature.
+
+    This test ensures, that if user enabled this feature, comments will be generated and added to the database."""
+
+    # Enable auto-responding feature for user1
+    enable_auto_response = test_client.patch(
+        'api/user/',
+        headers={"Authorization": user.access_token},
+        json={
+            "auto_respond_to_comments": True,
+            "auto_respond_time": 0
+        }
+    )
+    assert enable_auto_response.status_code == 200
+
+    # Create post
+    create_post_response = test_client.post(
+        'api/posts/',
+        headers={"Authorization": user.access_token},
+        json={
+            "title": "hi",
+            "content": "I love drum and bass music!"
+        }
+    )
+    assert create_post_response.status_code == 201
+
+    # Create comment from user2
+    create_comment_response = test_client.post(
+        f'api/posts/{create_post_response.json().get("id")}/comments',
+        headers={"Authorization": user2.access_token},
+        json={
+            "content": "yey dude me too!"
+        }
+    )
+    assert create_comment_response.status_code == 201
+
+    # Wait for comment to be generated
+    time.sleep(5)
+
+    # Check amount of comments
+    post_comments_response = test_client.get(
+        f'api/posts/{create_post_response.json().get("id")}/comments'
+    )
+    assert post_comments_response.status_code == 200
+
+    assert len(post_comments_response.json()) == 2

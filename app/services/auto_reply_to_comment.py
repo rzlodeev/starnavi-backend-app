@@ -102,7 +102,8 @@ class AutoReplyToCommentService:
         :return:
         """
 
-        time.sleep(delay_min * 60)
+        if delay_min:
+            time.sleep(delay_min * 60)
 
         try:
             db_comment = CommentModel(

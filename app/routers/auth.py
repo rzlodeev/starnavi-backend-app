@@ -120,6 +120,7 @@ async def update_profile(
 
     return user
 
+
 @router.delete("/user", response_model=dict)
 async def delete_profile(
         db: Session = Depends(get_db),
@@ -135,6 +136,9 @@ async def delete_profile(
         # Get user profile
         user_id = current_user.id
         db_user_profile = db.query(UserProfileModel).filter(UserProfileModel.user_id == user_id).first()
+        if db_user_profile is None:
+            raise HTTPException(status_code=404,
+                                detail="Current user profile not found")
 
         # Delete user and profile
         db.delete(current_user)
@@ -163,7 +167,7 @@ async def get_current_user_profile(
         user_profile = db.query(UserProfileModel).filter(UserProfileModel.user_id == current_user.id).first()
         if user_profile is None:
             raise HTTPException(status_code=404,
-                                detail="Current user not found")
+                                detail="Current user profile not found")
 
         return user_profile
 

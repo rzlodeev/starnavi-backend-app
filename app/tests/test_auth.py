@@ -135,7 +135,7 @@ def test_delete_user(create_test_db, test_client):
     This test ensures that user can be successfully deleted
     """
     response = test_client.delete(
-        "api/profile",
+        "api/user",
         headers={
             "Authorization": user.access_token
         }
