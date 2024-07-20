@@ -243,916 +243,916 @@ It should return you:
 ### Authentication
 
 <details>
-    <summary>POST /api/register</summary>
+  <summary>POST /api/register</summary>
 
-    Register a new user.
+  Register a new user.
 
-    Request body example:
+  Request body example:
 
-    ```
-    {
+  ```
+  {
+    "username": "string",
+    "email": "user@example.com",
+    "password": "string"
+  }
+  ```
+
+  Responses:
+
+   - Code *200*
+
+   Registered user object
+
+   ```
+   {
+       "id": 0,
       "username": "string",
       "email": "user@example.com",
-      "password": "string"
-    }
-    ```
+      "auto_respond_to_comments": true,
+      "auto_respond_time": 0
+   }
+  ```
 
-    Responses:
+   - Code *422*
 
-     - Code *200*
+   Validation error. Triggers if request is not properly formatted.
 
-     Registered user object
+   ```
+   {
+      "detail": [
+          {
+              "type": "missing",
+              "loc": [
+                  "body",
+                  "username"
+              ],
+              "msg": "Field required",
+              "input": null
+          },
+          {
+              "type": "missing",
+              "loc": [
+                  "body",
+                  "password"
+              ],
+              "msg": "Field required",
+              "input": null
+          }
+      ]
+   }
+  ```
 
-     ```
-     {
-         "id": 0,
-        "username": "string",
-        "email": "user@example.com",
-        "auto_respond_to_comments": true,
-        "auto_respond_time": 0
-     }
-    ```
+  - Code *500*
 
-     - Code *422*
+  Triggers with database error.
 
-     Validation error. Triggers if request is not properly formatted.
-
-     ```
-     {
-        "detail": [
-            {
-                "type": "missing",
-                "loc": [
-                    "body",
-                    "username"
-                ],
-                "msg": "Field required",
-                "input": null
-            },
-            {
-                "type": "missing",
-                "loc": [
-                    "body",
-                    "password"
-                ],
-                "msg": "Field required",
-                "input": null
-            }
-        ]
-     }
-    ```
-
-    - Code *500*
-
-    Triggers with database error.
-
-    ```
-    {
-        "detail": ""An database error occurred while deleting the user profile: ERROR_MESSAGE""
-    }
-    ```
+  ```
+  {
+      "detail": ""An database error occurred while deleting the user profile: ERROR_MESSAGE""
+  }
+  ```
 </details>
 
 <details>
-    <summary>POST `/api/login`</summary>
-    Login to obtain access token.
+  <summary>POST `/api/login`</summary>
+  Login to obtain access token.
 
-    Request form-data parameters:
+  Request form-data parameters:
 
-    `username` - string *required*
-    `password` - string *required*
+  `username` - string *required*
+  `password` - string *required*
 
-    Responses:
+  Responses:
 
-     - Code *200*
+   - Code *200*
 
-     Access token and type
+   Access token and type
 
-     ```
-     {
-        "access_token": "ACCESS_TOKEN",
-        "type": "bearer"
-     }
-    ```
+   ```
+   {
+      "access_token": "ACCESS_TOKEN",
+      "type": "bearer"
+   }
+  ```
 
-     - Code *422*
+   - Code *422*
 
-     Validation error. Triggers if request is not properly formatted.
+   Validation error. Triggers if request is not properly formatted.
 
-     ```
-     {
-        "detail": [
-            {
-                "type": "missing",
-                "loc": [
-                    "body",
-                    "username"
-                ],
-                "msg": "Field required",
-                "input": null
-            },
-            {
-                "type": "missing",
-                "loc": [
-                    "body",
-                    "password"
-                ],
-                "msg": "Field required",
-                "input": null
-            }
-        ]
-     }
-    ```
+   ```
+   {
+      "detail": [
+          {
+              "type": "missing",
+              "loc": [
+                  "body",
+                  "username"
+              ],
+              "msg": "Field required",
+              "input": null
+          },
+          {
+              "type": "missing",
+              "loc": [
+                  "body",
+                  "password"
+              ],
+              "msg": "Field required",
+              "input": null
+          }
+      ]
+   }
+  ```
 
-    - Code *500*
+  - Code *500*
 
-    Triggers with database error.
+  Triggers with database error.
 
-    ```
-    {
-        "detail": ""An database error occurred while deleting the user profile: ERROR_MESSAGE""
-    }
-    ```
+  ```
+  {
+      "detail": ""An database error occurred while deleting the user profile: ERROR_MESSAGE""
+  }
+  ```
 </details>
 
 <details>
-    <summary>DELETE `/api/user`</summary>
-    Delete current user profile
+  <summary>DELETE `/api/user`</summary>
+  Delete current user profile
 
-    Request headers:
+  Request headers:
 
-    ```
-    Authentication: Bearer ACCESS_TOKEN
-    ```
+  ```
+  Authentication: Bearer ACCESS_TOKEN
+  ```
 
-    Responses:
+  Responses:
 
-     - Code *200*
+   - Code *200*
 
-     Message indicating the deletion status
+   Message indicating the deletion status
 
-     ```
-     {
-        "message": "User %username% was deleted successfully"
-     }
-    ```
+   ```
+   {
+      "message": "User %username% was deleted successfully"
+   }
+  ```
 
-    - Code *401* UNAUTHENTICATED
+  - Code *401* UNAUTHENTICATED
 
-    Triggers when credentials were not provided or they are invalid.
+  Triggers when credentials were not provided or they are invalid.
 
-    ```
-    {
-        "detail": "Could not validate credentials"
-    }
-    ```
+  ```
+  {
+      "detail": "Could not validate credentials"
+  }
+  ```
 
-    - Code *500*
+  - Code *500*
 
-    Triggers with database error.
+  Triggers with database error.
 
-    ```
-    {
-        "detail": ""An database error occurred while deleting the user profile: ERROR_MESSAGE""
-    }
-    ```
+  ```
+  {
+      "detail": ""An database error occurred while deleting the user profile: ERROR_MESSAGE""
+  }
+  ```
 </details>
 
 <details>
-    <summary>PATCH `/api/user`</summary>
-    Update profile endpoint.
+  <summary>PATCH `/api/user`</summary>
+  Update profile endpoint.
 
-    Request headers:
+  Request headers:
 
-    ```
-    Authentication: Bearer ACCESS_TOKEN
-    ```
+  ```
+  Authentication: Bearer ACCESS_TOKEN
+  ```
 
-    Request body example:
+  Request body example:
 
-    ```
-    {
-        "username": "string",
-        "email": "string",
-        "auto_respond_to_comments": true,
-        "auto_respond_time": 0
-    }
-    ```
+  ```
+  {
+      "username": "string",
+      "email": "string",
+      "auto_respond_to_comments": true,
+      "auto_respond_time": 0
+  }
+  ```
 
-    None of fields are required, but request should contain at least one of them.
+  None of fields are required, but request should contain at least one of them.
 
-    Responses:
+  Responses:
 
-     - Code *200*
+   - Code *200*
 
-     Updated user object
+   Updated user object
 
-    ```
-    {
-        "username": "string",
-        "email": "string",
-        "auto_respond_to_comments": true,
-        "auto_respond_time": 0
-    }
-    ```
+  ```
+  {
+      "username": "string",
+      "email": "string",
+      "auto_respond_to_comments": true,
+      "auto_respond_time": 0
+  }
+  ```
 
-     - Code *422*
+   - Code *422*
 
-     Validation error. Triggers if request is not properly formatted.
+   Validation error. Triggers if request is not properly formatted.
 
-     ```
-     {
-        "detail": [
-        {
-            "type": "missing",
-            "loc": [
-                "body"
-            ],
-            "msg": "Field required",
-            "input": null
-        }]
-    }
-    ```
+   ```
+   {
+      "detail": [
+      {
+          "type": "missing",
+          "loc": [
+              "body"
+          ],
+          "msg": "Field required",
+          "input": null
+      }]
+  }
+  ```
 
-    - Code *401*
+  - Code *401*
 
-    Triggers when credentials were not provided or they are invalid.
+  Triggers when credentials were not provided or they are invalid.
 
-    ```
-    {
-        "detail": "Could not validate credentials"
-    }
-    ```
+  ```
+  {
+      "detail": "Could not validate credentials"
+  }
+  ```
 
-    - Code *500*
+  - Code *500*
 
-    Triggers with database error.
+  Triggers with database error.
 
-    ```
-    {
-        "detail": ""An database error occurred while deleting the user profile: ERROR_MESSAGE""
-    }
-    ```
+  ```
+  {
+      "detail": ""An database error occurred while deleting the user profile: ERROR_MESSAGE""
+  }
+  ```
 </details>
 
 <details>
-    <summary>GET `/api/my-profile`</summary>
-    Get authenticated user profile.
+  <summary>GET `/api/my-profile`</summary>
+  Get authenticated user profile.
 
-    Request headers:
+  Request headers:
 
-    ```
-    Authentication: Bearer ACCESS_TOKEN
-    ```
+  ```
+  Authentication: Bearer ACCESS_TOKEN
+  ```
 
-    Responses:
+  Responses:
 
-     - Code *200*
+   - Code *200*
 
-     User profile object
+   User profile object
 
-    ```
-    {
-        "id": 0,
-        "user_id": 0,
-        "bio": "string",
-        "profile_picture": "string"
-    }
-    ```
+  ```
+  {
+      "id": 0,
+      "user_id": 0,
+      "bio": "string",
+      "profile_picture": "string"
+  }
+  ```
 
-    - Code *401*
+  - Code *401*
 
-    Triggers when credentials were not provided or they are invalid.
+  Triggers when credentials were not provided or they are invalid.
 
-    ```
-    {
-        "detail": "Could not validate credentials"
-    }
-    ```
+  ```
+  {
+      "detail": "Could not validate credentials"
+  }
+  ```
 
-    - Code *500*
+  - Code *500*
 
-    Triggers with database error.
+  Triggers with database error.
 
-    ```
-    {
-        "detail": ""An database error occurred while deleting the user profile: ERROR_MESSAGE""
-    }
-    ```
+  ```
+  {
+      "detail": ""An database error occurred while deleting the user profile: ERROR_MESSAGE""
+  }
+  ```
 </details>
 
 <details>
-    <summary>GET `/api/refresh-access-token`</summary>
-    Exchange existing access token for a new one.
+  <summary>GET `/api/refresh-access-token`</summary>
+  Exchange existing access token for a new one.
 
-    Request headers:
+  Request headers:
 
-    ```
-    Authentication: Bearer ACCESS_TOKEN
-    ```
+  ```
+  Authentication: Bearer ACCESS_TOKEN
+  ```
 
-    Responses:
+  Responses:
 
-     - Code *200*
+   - Code *200*
 
-     Access token and type
+   Access token and type
 
-     ```
-     {
-        "access_token": "ACCESS_TOKEN",
-        "type": "bearer"
-     }
-    ```
+   ```
+   {
+      "access_token": "ACCESS_TOKEN",
+      "type": "bearer"
+   }
+  ```
 
-    - Code *401*
+  - Code *401*
 
-    Triggers when credentials were not provided or they are invalid.
+  Triggers when credentials were not provided or they are invalid.
 
-    ```
-    {
-        "detail": "Could not validate credentials"
-    }
-    ```
+  ```
+  {
+      "detail": "Could not validate credentials"
+  }
+  ```
 
-    - Code *500*
+  - Code *500*
 
-    Triggers with database error.
+  Triggers with database error.
 
-    ```
-    {
-        "detail": ""An database error occurred while trying to refreshing token: ERROR_MESSAGE""
-    }
-    ```
+  ```
+  {
+      "detail": ""An database error occurred while trying to refreshing token: ERROR_MESSAGE""
+  }
+  ```
 </details>
 
 ### Posts
 
 <details>
-    <summary>GET `/api/posts`</summary>
-    List all posts.
+  <summary>GET `/api/posts`</summary>
+  List all posts.
 
-    Responses:
+  Responses:
 
-     - Code *200*
+   - Code *200*
 
-     List of post objects
-
-     ```
-     [
-        {
-        "id": 0,
-        "title": "string",
-        "content": "string",
-        "owner_id": 0
-        }
-    ]
-    ```
-
-    - Code *500*
-
-    Triggers with database error.
-
-    ```
-    {
-        "detail": ""An database error occurred while getting posts list: ERROR_MESSAGE""
-    }
-    ```
-</details>
-
-<details>
-    <summary>GET `/api/posts/{post_id}`</summary>
-    Get specific post endpoint.
-
-    Path parameters:
-    post_id: ID of post to obtain.
-
-    Responses:
-
-     - Code *200*
-
-     Post object
-
-    ```
-     {
-        "id": 0,
-        "title": "string",
-        "content": "string",
-        "owner_id": 0
-    }
-    ```
-
-    - Code *404*
-
-    Triggers, when provided post_id doesn't exist.
-
-    ```
-    {
-        "detail": Post not found""
-    }
-    ```
-
-    - Code *500*
-
-    Triggers with database error.
-
-    ```
-    {
-        "detail": ""An database error occurred while trying to create post: ERROR_MESSAGE""
-    }
-    ```
-</details>
-
-<details>
-    <summary>PUT `/api/posts/{post_id}`</summary>
-    Update post.
-
-    Path parameters:
-    post_id: ID of post to update.
-
-    Request headers:
-
-    ```
-    Authentication: Bearer ACCESS_TOKEN
-    ```
-
-    Request body:
-
-    ```
-    {
-        "title": "string",
-        "content": "string"
-    }
-    ```
-
-    Responses:
-
-     - Code *200*
-
-     Updated post object
-
-    ```
-     {
-        "id": 0,
-        "title": "string",
-        "content": "string",
-        "owner_id": 0
-    }
-    ```
-
-        - Code *401* UNAUTHENTICATED
-
-    Triggers when credentials were not provided or they are invalid.
-
-    ```
-    {
-        "detail": "Could not validate credentials"
-    }
-    ```
-
-    - Code *403* UNAUTHORIZED
-
-    Triggers when current user doesn't have permissions to perform action.
-
-    ```
-    {
-        "detail": "Post can be updated only by its author."
-    }
-    ```
-
-    - Code *404*
-
-    Triggers, when provided post_id doesn't exist.
-
-    ```
-    {
-        "detail": Post not found""
-    }
-    ```
-
-    - Code *500*
-
-    Triggers with database error.
-
-    ```
-    {
-        "detail": ""An database error occurred while updating post: ERROR_MESSAGE""
-    }
-    ```
-</details>
-
-<details>
-    <summary>DELETE `/api/posts/{post_id}`</summary>
-    Delete post endpoint.
-
-    Path parameters:
-    post_id: ID of post to delete.
-
-    Request headers:
-
-    ```
-    Authentication: Bearer ACCESS_TOKEN
-    ```
-
-    Responses:
-
-     - Code *200*
-
-     Message indicating successful deletion.
-
-     ```
-     {
-        "message": "Post {post_id} was deleted successfully."
-     }
-    ```
-
-    - Code *401* UNAUTHENTICATED
-
-    Triggers when credentials were not provided or they are invalid.
-
-    ```
-    {
-        "detail": "Could not validate credentials"
-    }
-    ```
-
-    - Code *403* UNAUTHORIZED
-
-    Triggers when current user doesn't have permissions to perform action.
-
-    ```
-    {
-        "detail": "Post can be updated only by its author."
-    }
-    ```
-
-    - Code *404*
-
-    Triggers, when provided post_id doesn't exist.
-
-    ```
-    {
-        "detail": "Post not found"
-    }
-    ```
-
-    - Code *500*
-
-    Triggers with database error.
+   List of post objects
 
    ```
-    {
-        "detail": "An database error occurred while deleting post: ERROR_MESSAGE"
-    }
-    ```
+   [
+      {
+      "id": 0,
+      "title": "string",
+      "content": "string",
+      "owner_id": 0
+      }
+  ]
+  ```
+
+  - Code *500*
+
+  Triggers with database error.
+
+  ```
+  {
+      "detail": ""An database error occurred while getting posts list: ERROR_MESSAGE""
+  }
+  ```
+</details>
+
+<details>
+  <summary>GET `/api/posts/{post_id}`</summary>
+  Get specific post endpoint.
+
+  Path parameters:
+  post_id: ID of post to obtain.
+
+  Responses:
+
+   - Code *200*
+
+   Post object
+
+  ```
+   {
+      "id": 0,
+      "title": "string",
+      "content": "string",
+      "owner_id": 0
+  }
+  ```
+
+  - Code *404*
+
+  Triggers, when provided post_id doesn't exist.
+
+  ```
+  {
+      "detail": Post not found""
+  }
+  ```
+
+  - Code *500*
+
+  Triggers with database error.
+
+  ```
+  {
+      "detail": ""An database error occurred while trying to create post: ERROR_MESSAGE""
+  }
+  ```
+</details>
+
+<details>
+  <summary>PUT `/api/posts/{post_id}`</summary>
+  Update post.
+
+  Path parameters:
+  post_id: ID of post to update.
+
+  Request headers:
+
+  ```
+  Authentication: Bearer ACCESS_TOKEN
+  ```
+
+  Request body:
+
+  ```
+  {
+      "title": "string",
+      "content": "string"
+  }
+  ```
+
+  Responses:
+
+   - Code *200*
+
+   Updated post object
+
+  ```
+   {
+      "id": 0,
+      "title": "string",
+      "content": "string",
+      "owner_id": 0
+  }
+  ```
+
+      - Code *401* UNAUTHENTICATED
+
+  Triggers when credentials were not provided or they are invalid.
+
+  ```
+  {
+      "detail": "Could not validate credentials"
+  }
+  ```
+
+  - Code *403* UNAUTHORIZED
+
+  Triggers when current user doesn't have permissions to perform action.
+
+  ```
+  {
+      "detail": "Post can be updated only by its author."
+  }
+  ```
+
+  - Code *404*
+
+  Triggers, when provided post_id doesn't exist.
+
+  ```
+  {
+      "detail": Post not found""
+  }
+  ```
+
+  - Code *500*
+
+  Triggers with database error.
+
+  ```
+  {
+      "detail": ""An database error occurred while updating post: ERROR_MESSAGE""
+  }
+  ```
+</details>
+
+<details>
+  <summary>DELETE `/api/posts/{post_id}`</summary>
+  Delete post endpoint.
+
+  Path parameters:
+  post_id: ID of post to delete.
+
+  Request headers:
+
+  ```
+  Authentication: Bearer ACCESS_TOKEN
+  ```
+
+  Responses:
+
+   - Code *200*
+
+   Message indicating successful deletion.
+
+   ```
+   {
+      "message": "Post {post_id} was deleted successfully."
+   }
+  ```
+
+  - Code *401* UNAUTHENTICATED
+
+  Triggers when credentials were not provided or they are invalid.
+
+  ```
+  {
+      "detail": "Could not validate credentials"
+  }
+  ```
+
+  - Code *403* UNAUTHORIZED
+
+  Triggers when current user doesn't have permissions to perform action.
+
+  ```
+  {
+      "detail": "Post can be updated only by its author."
+  }
+  ```
+
+  - Code *404*
+
+  Triggers, when provided post_id doesn't exist.
+
+  ```
+  {
+      "detail": "Post not found"
+  }
+  ```
+
+  - Code *500*
+
+  Triggers with database error.
+
+  ```
+  {
+      "detail": "An database error occurred while deleting post: ERROR_MESSAGE"
+  }
+  ```
 </details>
 
 ### Users
 <details>
-    <summary>GET `/api/profile/{user_id}`</summary>
-    Get specific user profile.
+  <summary>GET `/api/profile/{user_id}`</summary>
+  Get specific user profile.
 
-    Path parameters:
-    user_id: ID of user to obtain.
+  Path parameters:
+  user_id: ID of user to obtain.
 
-    Responses:
+  Responses:
 
-     - Code *200*
+   - Code *200*
 
-     Post object
+   Post object
 
-     ```
-     {
-         "id": 0,
-        "username": "string",
-        "email": "user@example.com",
-        "auto_respond_to_comments": true,
-        "auto_respond_time": 0
-     }
-     ```
+   ```
+   {
+       "id": 0,
+      "username": "string",
+      "email": "user@example.com",
+      "auto_respond_to_comments": true,
+      "auto_respond_time": 0
+   }
+   ```
 
-    - Code *404*
+  - Code *404*
 
-    Triggers, when provided user_id doesn't exist.
+  Triggers, when provided user_id doesn't exist.
 
-    ```
-    {
-        "detail": User not found""
-    }
-    ```
+  ```
+  {
+      "detail": User not found""
+  }
+  ```
 
-    - Code *500*
+  - Code *500*
 
-    Triggers with database error.
+  Triggers with database error.
 
-    ```
-    {
-        "detail": ""An database error occurred while deleting the user profile: ERROR_MESSAGE""
-    }
-    ```
+  ```
+  {
+      "detail": ""An database error occurred while deleting the user profile: ERROR_MESSAGE""
+  }
+  ```
 </details>
 
 ### Comments
 <details>
-    <summary>GET `/api/posts/{post_id}/comments`</summary>
-    List all comments for specific post.
+  <summary>GET `/api/posts/{post_id}/comments`</summary>
+  List all comments for specific post.
 
-    Path parameters:
-    post_id: ID of post.
+  Path parameters:
+  post_id: ID of post.
 
-    Responses:
+  Responses:
 
-     - Code *200*
+   - Code *200*
 
-     List of comment objects
+   List of comment objects
 
-     ```
-     [
-        {
-            "id": 0,
-             "content": "string",
-             "created_at": "2024-07-20T17:46:52.825Z",
-             "owner_id": 0,
-            "post_id": 0
-        }
-     ]
-     ```
+   ```
+   [
+      {
+          "id": 0,
+           "content": "string",
+           "created_at": "2024-07-20T17:46:52.825Z",
+           "owner_id": 0,
+          "post_id": 0
+      }
+   ]
+   ```
 
-    - Code *500*
+  - Code *500*
 
-    Triggers with database error.
+  Triggers with database error.
 
-    ```
-    {
-        "detail": ""An database error occurred while trying list comments for {post_id}: ERROR_MESSAGE""
-    }
-    ```
+  ```
+  {
+      "detail": ""An database error occurred while trying list comments for {post_id}: ERROR_MESSAGE""
+  }
+  ```
 </details>
 
 <details>
-    <summary>POST `/api/posts/{post_id}/comments`</summary>
-    Comment creation for specific post endpoint.
+  <summary>POST `/api/posts/{post_id}/comments`</summary>
+  Comment creation for specific post endpoint.
 
-    Path parameters:
-    post_id: ID of post.
+  Path parameters:
+  post_id: ID of post.
 
-    Request headers:
+  Request headers:
 
-    ```
-    Authentication: Bearer ACCESS_TOKEN
-    ```
+  ```
+  Authentication: Bearer ACCESS_TOKEN
+  ```
 
-    Request body:
+  Request body:
 
-    ```
-    {
-        "content": "string"
-    }
-    ```
+  ```
+  {
+      "content": "string"
+  }
+  ```
 
-    Responses:
+  Responses:
 
-     - Code *200*
+   - Code *200*
 
-     Created comment
+   Created comment
 
-     ```
-     {
-        "id": 0,
-        "content": "string",
-        "created_at": "2024-07-20T17:46:52.825Z",
-        "owner_id": 0,
-        "post_id": 0
-     }
-     ```
+   ```
+   {
+      "id": 0,
+      "content": "string",
+      "created_at": "2024-07-20T17:46:52.825Z",
+      "owner_id": 0,
+      "post_id": 0
+   }
+   ```
 
-    - Code *401*
+  - Code *401*
 
-    Triggers when credentials were not provided or they are invalid.
+  Triggers when credentials were not provided or they are invalid.
 
-    ```
-    {
-        "detail": "Could not validate credentials"
-    }
-    ```
+  ```
+  {
+      "detail": "Could not validate credentials"
+  }
+  ```
 
-    - Code *500*
+  - Code *500*
 
-    Triggers with database error.
+  Triggers with database error.
 
-    ```
-    {
-        "detail": ""An database error occurred while trying pto create comment for {post_id}: ERROR_MESSAGE""
-    }
-    ```
+  ```
+  {
+      "detail": ""An database error occurred while trying pto create comment for {post_id}: ERROR_MESSAGE""
+  }
+  ```
 </details>
 
 <details>
-    <summary>#### PUT `/api/posts/{post_id}/comments/{comment_id}`</summary>
-    Update comment for specific post.
+  <summary>#### PUT `/api/posts/{post_id}/comments/{comment_id}`</summary>
+  Update comment for specific post.
 
-    Path parameters:
-    post_id: ID of post.
-    comment_id: ID of comment to update.
+  Path parameters:
+  post_id: ID of post.
+  comment_id: ID of comment to update.
 
-    Request headers:
+  Request headers:
 
-    ```
-    Authentication: Bearer ACCESS_TOKEN
-    ```
+  ```
+  Authentication: Bearer ACCESS_TOKEN
+  ```
 
-    Request body:
+  Request body:
 
-    ```
-    {
-        "content": "string"
-    }
-    ```
+  ```
+  {
+      "content": "string"
+  }
+  ```
 
-    Responses:
+  Responses:
 
-     - Code *200*
+   - Code *200*
 
-     Updated comment object
+   Updated comment object
 
-     ```
-     {
-        "id": 0,
-        "content": "string",
-        "created_at": "2024-07-20T17:46:52.825Z",
-        "owner_id": 0,
-        "post_id": 0
-     }
-     ```
+   ```
+   {
+      "id": 0,
+      "content": "string",
+      "created_at": "2024-07-20T17:46:52.825Z",
+      "owner_id": 0,
+      "post_id": 0
+   }
+   ```
 
-    - Code *401* UNAUTHENTICATED
+  - Code *401* UNAUTHENTICATED
 
-    Triggers when credentials were not provided or they are invalid.
+  Triggers when credentials were not provided or they are invalid.
 
-    ```
-    {
-        "detail": "Could not validate credentials"
-    }
-    ```
+  ```
+  {
+      "detail": "Could not validate credentials"
+  }
+  ```
 
-    - Code *403* UNAUTHORIZED
+  - Code *403* UNAUTHORIZED
 
-    Triggers when current user doesn't have permissions to perform action.
+  Triggers when current user doesn't have permissions to perform action.
 
-    ```
-    {
-        "detail": "Comment can be updated only by its author."
-    }
-    ```
+  ```
+  {
+      "detail": "Comment can be updated only by its author."
+  }
+  ```
 
-    - Code *404*
+  - Code *404*
 
-    Triggers, when provided post_id or comment_id doesn't exist.
+  Triggers, when provided post_id or comment_id doesn't exist.
 
-    ```
-    {
-        "detail": "Post not found"
-    }
-    ```
+  ```
+  {
+      "detail": "Post not found"
+  }
+  ```
 
-    - Code *500*
+  - Code *500*
 
-    Triggers with database error.
+  Triggers with database error.
 
-    ```
-    {
-        "detail": ""An database error occurred while updating comment: ERROR_MESSAGE""
-    }
-    ```
+  ```
+  {
+      "detail": ""An database error occurred while updating comment: ERROR_MESSAGE""
+  }
+  ```
 </details>
 
 <details>
-    <summary>#### DELETE `/api/posts/{post_id}/comments/{comment_id}`</summary>
-    Delete comment endpoint.
+  <summary>#### DELETE `/api/posts/{post_id}/comments/{comment_id}`</summary>
+  Delete comment endpoint.
 
-    Path parameters:
-    post_id: ID of post.
-    comment_id: ID of comment to delete.
+  Path parameters:
+  post_id: ID of post.
+  comment_id: ID of comment to delete.
 
-    Request headers:
+  Request headers:
 
-    ```
-    Authentication: Bearer ACCESS_TOKEN
-    ```
+  ```
+  Authentication: Bearer ACCESS_TOKEN
+  ```
 
-    Responses:
+  Responses:
 
-     - Code *200*
+   - Code *200*
 
-     Message indicating successful deletion.
+   Message indicating successful deletion.
 
-     ```
-     {
-        "message": "Comment {comment_id} was deleted successfully."
-     }
-     ```
+   ```
+   {
+      "message": "Comment {comment_id} was deleted successfully."
+   }
+   ```
 
-    - Code *404*
+  - Code *404*
 
-    Triggers, when provided post_id or comment_id doesn't exist.
+  Triggers, when provided post_id or comment_id doesn't exist.
 
-    ```
-    {
-        "detail": Post not found""
-    }
-    ```
+  ```
+  {
+      "detail": Post not found""
+  }
+  ```
 
-    - Code *401* UNAUTHENTICATED
+  - Code *401* UNAUTHENTICATED
 
-    Triggers when credentials were not provided or they are invalid.
+  Triggers when credentials were not provided or they are invalid.
 
-    ```
-    {
-        "detail": "Could not validate credentials"
-    }
-    ```
+  ```
+  {
+      "detail": "Could not validate credentials"
+  }
+  ```
 
-    - Code *403* UNAUTHORIZED
+  - Code *403* UNAUTHORIZED
 
-    Triggers when current user doesn't have permissions to perform action.
+  Triggers when current user doesn't have permissions to perform action.
 
-    ```
-    {
-        "detail": "Comment can be deleted only by its author."
-    }
-    ```
+  ```
+  {
+      "detail": "Comment can be deleted only by its author."
+  }
+  ```
 
-    - Code *500*
+  - Code *500*
 
-    Triggers with database error.
+  Triggers with database error.
 
-    ```
-    {
-        "detail": ""An database error occurred while deleting post: ERROR_MESSAGE""
-    }
-    ```
+  ```
+  {
+      "detail": ""An database error occurred while deleting post: ERROR_MESSAGE""
+  }
+  ```
 </details>
 
 <details>
-    <summary>#### GET `/api/comments-daily-breakdown`</summary>
-    Get comments for specified range of time.
+  <summary>#### GET `/api/comments-daily-breakdown`</summary>
+  Get comments for specified range of time.
 
-    Query parameters:
-    date_from: Start date (included) *required
-    date_to: End date (included) *required
+  Query parameters:
+  date_from: Start date (included) *required
+  date_to: End date (included) *required
 
-    Request example:
-    ```
-    /api/comments-daily-breakdown/?date_from=1337-04-19&date_to=1337-04-20
-    ```
+  Request example:
+  ```
+  /api/comments-daily-breakdown/?date_from=1337-04-19&date_to=1337-04-20
+  ```
 
-    Responses:
+  Responses:
 
-    - Code *200*
+  - Code *200*
 
-    Statistics for comments
+  Statistics for comments
 
-    ```
-    {
-    "comments": {
-        "2024-07-20": {
-            "items": [
-                {
-                    "id": 39,
-                    "content": "Of course we do!",
-                    "created_at": "2024-07-20T19:32:44.070997",
-                    "owner_id": 1,
-                    "post_id": 4
-                },
-                {
-                    "id": 40,
-                    "content": "Sure thing! Installing Kali Linux in Windows using WSL is a great way to have fun and learn at the same time. Don't hesitate to give it a try! 🐧💻\\n",
-                    "created_at": "2024-07-20T19:33:45.475547",
-                    "owner_id": 3,
-                    "post_id": 4
-                },
-                {
-                    "id": 41,
-                    "content": "Of course we do, please tell us how",
-                    "created_at": "2024-07-20T19:35:42.604288",
-                    "owner_id": 1,
-                    "post_id": 4
-                },
-                {
-                    "id": 42,
-                    "content": "Sure thing! First, you need to enable WSL in Windows features, then install Kali Linux from the Microsoft Store. Once installed, set up your username and password. You can then start having fun exploring all the tools Kali Linux offers right on your Windows system. Enjoy! \\n",
-                    "created_at": "2024-07-20T19:36:44.043891",
-                    "owner_id": 3,
-                    "post_id": 4
-                }],
-                "comments_amount": 4
-            }
-        },
-        "blocked_comments": {},
-        "total_comments_amount": 4,
-        "total_blocked_comments_amount": 0
-    }
-    ```
-
+  ```
+  {
+  "comments": {
+      "2024-07-20": {
+          "items": [
+              {
+                  "id": 39,
+                  "content": "Of course we do!",
+                  "created_at": "2024-07-20T19:32:44.070997",
+                  "owner_id": 1,
+                  "post_id": 4
+              },
+              {
+                  "id": 40,
+                  "content": "Sure thing! Installing Kali Linux in Windows using WSL is a great way to have fun and learn at the same time. Don't hesitate to give it a try! 🐧💻\\n",
+                  "created_at": "2024-07-20T19:33:45.475547",
+                  "owner_id": 3,
+                  "post_id": 4
+              },
+              {
+                  "id": 41,
+                  "content": "Of course we do, please tell us how",
+                  "created_at": "2024-07-20T19:35:42.604288",
+                  "owner_id": 1,
+                  "post_id": 4
+              },
+              {
+                  "id": 42,
+                  "content": "Sure thing! First, you need to enable WSL in Windows features, then install Kali Linux from the Microsoft Store. Once installed, set up your username and password. You can then start having fun exploring all the tools Kali Linux offers right on your Windows system. Enjoy! \\n",
+                  "created_at": "2024-07-20T19:36:44.043891",
+                  "owner_id": 3,
+                  "post_id": 4
+              }],
+              "comments_amount": 4
+          }
+      },
+      "blocked_comments": {},
+      "total_comments_amount": 4,
+      "total_blocked_comments_amount": 0
+  }
+  ```
+</details>
 
 ## Database schemas
 
