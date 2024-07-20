@@ -1277,3 +1277,4 @@ To launch tests, call `pytest` command in venv.
 ## TODO
  - Add CORS
  - Add long-live token
+ - Make user creation enpoint returnd 201 CREATED status code instead of 200 OK
