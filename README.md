@@ -243,7 +243,7 @@ It should return you:
 ### Authentication
 
 <details>
-    <summary>POST `/api/register`</summary>
+    <summary>POST /api/register</summary>
 
     Register a new user.
 
