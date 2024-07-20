@@ -244,6 +244,7 @@ It should return you:
 
 <details>
     <summary>POST `/api/register`</summary>
+
     Register a new user.
 
     Request body example:
