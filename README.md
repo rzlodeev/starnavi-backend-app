@@ -236,7 +236,7 @@ It should return you:
     "total_comments_amount": 2,
     "total_blocked_comments_amount": 1
 }
-
+```
 
 ## API Reference
 
@@ -631,7 +631,7 @@ It should return you:
 
      Post object
 
-     ```
+    ```
      {
         "id": 0,
         "title": "string",
@@ -648,6 +648,7 @@ It should return you:
     {
         "detail": Post not found""
     }
+    ```
 
     - Code *500*
 
@@ -680,7 +681,7 @@ It should return you:
         "title": "string",
         "content": "string"
     }
-
+    ```
 
     Responses:
 
@@ -688,7 +689,7 @@ It should return you:
 
      Updated post object
 
-     ```
+    ```
      {
         "id": 0,
         "title": "string",
@@ -715,6 +716,7 @@ It should return you:
     {
         "detail": "Post can be updated only by its author."
     }
+    ```
 
     - Code *404*
 
@@ -780,6 +782,7 @@ It should return you:
     {
         "detail": "Post can be updated only by its author."
     }
+    ```
 
     - Code *404*
 
@@ -787,7 +790,7 @@ It should return you:
 
     ```
     {
-        "detail": Post not found""
+        "detail": "Post not found"
     }
     ```
 
@@ -795,9 +798,9 @@ It should return you:
 
     Triggers with database error.
 
-    ```
+   ```
     {
-        "detail": ""An database error occurred while deleting post: ERROR_MESSAGE""
+        "detail": "An database error occurred while deleting post: ERROR_MESSAGE"
     }
     ```
 </details>
@@ -824,7 +827,7 @@ It should return you:
         "auto_respond_to_comments": true,
         "auto_respond_time": 0
      }
-    ```
+     ```
 
     - Code *404*
 
@@ -834,6 +837,7 @@ It should return you:
     {
         "detail": User not found""
     }
+    ```
 
     - Code *500*
 
@@ -918,7 +922,7 @@ It should return you:
         "owner_id": 0,
         "post_id": 0
      }
-    ```
+     ```
 
     - Code *401*
 
@@ -961,7 +965,7 @@ It should return you:
     {
         "content": "string"
     }
-
+    ```
 
     Responses:
 
@@ -977,7 +981,7 @@ It should return you:
         "owner_id": 0,
         "post_id": 0
      }
-    ```
+     ```
 
     - Code *401* UNAUTHENTICATED
 
@@ -997,6 +1001,7 @@ It should return you:
     {
         "detail": "Comment can be updated only by its author."
     }
+    ```
 
     - Code *404*
 
@@ -1043,7 +1048,7 @@ It should return you:
      {
         "message": "Comment {comment_id} was deleted successfully."
      }
-    ```
+     ```
 
     - Code *404*
 
@@ -1073,6 +1078,7 @@ It should return you:
     {
         "detail": "Comment can be deleted only by its author."
     }
+    ```
 
     - Code *500*
 
@@ -1144,6 +1150,7 @@ It should return you:
         "total_comments_amount": 4,
         "total_blocked_comments_amount": 0
     }
+    ```
 
 
 ## Database schemas
