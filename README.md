@@ -243,7 +243,7 @@ It should return you:
 ### Authentication
 
 <details>
-    <summary>#### POST `/api/register`</summary>
+    <summary>POST `/api/register`</summary>
     Register a new user.
 
     Request body example:
@@ -313,7 +313,7 @@ It should return you:
 </details>
 
 <details>
-    <summary>#### POST `/api/login`</summary>
+    <summary>POST `/api/login`</summary>
     Login to obtain access token.
 
     Request form-data parameters:
@@ -375,7 +375,7 @@ It should return you:
 </details>
 
 <details>
-    <summary>#### DELETE `/api/user`</summary>
+    <summary>DELETE `/api/user`</summary>
     Delete current user profile
 
     Request headers:
@@ -418,7 +418,7 @@ It should return you:
 </details>
 
 <details>
-    <summary>#### PATCH `/api/user`</summary>
+    <summary>PATCH `/api/user`</summary>
     Update profile endpoint.
 
     Request headers:
@@ -495,7 +495,7 @@ It should return you:
 </details>
 
 <details>
-    <summary>#### GET `/api/my-profile`</summary>
+    <summary>GET `/api/my-profile`</summary>
     Get authenticated user profile.
 
     Request headers:
@@ -541,7 +541,7 @@ It should return you:
 </details>
 
 <details>
-    <summary>#### GET `/api/refresh-access-token`</summary>
+    <summary>GET `/api/refresh-access-token`</summary>
     Exchange existing access token for a new one.
 
     Request headers:
@@ -587,7 +587,7 @@ It should return you:
 ### Posts
 
 <details>
-    <summary>#### GET `/api/posts`</summary>
+    <summary>GET `/api/posts`</summary>
     List all posts.
 
     Responses:
@@ -619,7 +619,7 @@ It should return you:
 </details>
 
 <details>
-    <summary>#### GET `/api/posts/{post_id}`</summary>
+    <summary>GET `/api/posts/{post_id}`</summary>
     Get specific post endpoint.
 
     Path parameters:
@@ -662,7 +662,7 @@ It should return you:
 </details>
 
 <details>
-    <summary>#### PUT `/api/posts/{post_id}`</summary>
+    <summary>PUT `/api/posts/{post_id}`</summary>
     Update post.
 
     Path parameters:
@@ -740,7 +740,7 @@ It should return you:
 </details>
 
 <details>
-    <summary>#### DELETE `/api/posts/{post_id}`</summary>
+    <summary>DELETE `/api/posts/{post_id}`</summary>
     Delete post endpoint.
 
     Path parameters:
@@ -807,7 +807,7 @@ It should return you:
 
 ### Users
 <details>
-    <summary>#### GET `/api/profile/{user_id}`</summary>
+    <summary>GET `/api/profile/{user_id}`</summary>
     Get specific user profile.
 
     Path parameters:
@@ -852,7 +852,7 @@ It should return you:
 
 ### Comments
 <details>
-    <summary>#### GET `/api/posts/{post_id}/comments`</summary>
+    <summary>GET `/api/posts/{post_id}/comments`</summary>
     List all comments for specific post.
 
     Path parameters:
@@ -873,8 +873,8 @@ It should return you:
              "owner_id": 0,
             "post_id": 0
         }
-    ]
-    ```
+     ]
+     ```
 
     - Code *500*
 
@@ -888,7 +888,7 @@ It should return you:
 </details>
 
 <details>
-    <summary>#### POST `/api/posts/{post_id}/comments`</summary>
+    <summary>POST `/api/posts/{post_id}/comments`</summary>
     Comment creation for specific post endpoint.
 
     Path parameters:
