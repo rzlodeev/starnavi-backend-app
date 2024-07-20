@@ -18,7 +18,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 router = APIRouter()
 
 
-@router.post("/register", response_model=UserSchema)
+@router.post("/register",
+             response_model=UserSchema,
+             summary="Register a new user",
+             description="Register a new user in database",
+             response_description="Registered user object")
 async def create_user(
         user: UserCreate,
         db: Session = Depends(get_db)
