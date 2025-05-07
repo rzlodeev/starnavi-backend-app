@@ -5,11 +5,13 @@ App features back-end application in FastAPI with SQLite database, handled by SQ
 Supports users, posts and comments with corresponding endpoints and JWT authentication
 
 Additional features:
-    - Moderation of content using OpenAI moderation llm - posts and comments content are getting
-    checked for potentially harmful content before creation, and if moderation service will mark them as ones, they
-    will not be created, returning corresponding error.
-    - Auto-reply using LLM (OpenAI API) after previously set amount of time.
-    - Comment statistics endpoint, that returns comments and their amount for specified range of days.
+- Moderation of content using OpenAI moderation llm - posts and comments content are getting
+checked for potentially harmful content before creation, and if moderation service will mark them as ones, they
+will not be created, returning corresponding error.
+    
+- Auto-reply using LLM (OpenAI API) after previously set amount of time.
+    
+- Comment statistics endpoint, that returns comments and their amount for specified range of days.
 
 ## Installation
 
